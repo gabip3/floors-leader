@@ -1,5 +1,5 @@
 /* ============================================================
-   FLOOR'S LEADER — interactions
+   FLOOR'S LEADER : interactions
    ============================================================ */
 (function () {
   "use strict";
@@ -36,7 +36,7 @@
   }
 
   /* ============================================================
-     GALLERY — category cards open a carousel popup
+     GALLERY: category cards open a carousel popup
      Photo lists are built from each card's data-* attributes,
      matching the copied filenames  (dir-01.ext … dir-NN.ext).
      ============================================================ */
@@ -151,7 +151,7 @@
   }
 
   /* ============================================================
-     CONTACT FORM (demo — no backend)
+     CONTACT FORM (demo, no backend)
      ============================================================ */
   var form = document.getElementById("quoteForm");
   var note = document.getElementById("formNote");
@@ -166,7 +166,7 @@
         return;
       }
       note.style.color = "";
-      note.textContent = "Thanks, " + first + "! Your request was received — we'll be in touch shortly.";
+      note.textContent = "Thanks, " + first + "! Your request was received. We'll be in touch shortly.";
       form.reset();
     });
   }
