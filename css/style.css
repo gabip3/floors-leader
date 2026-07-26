@@ -151,8 +151,8 @@ p{margin:0 0 1rem}
 .hero-inner{position:relative; z-index:2; padding-bottom:clamp(3rem,8vh,6rem); padding-top:8rem; color:#fff}
 .hero-title{
   font-family:var(--f-head); font-weight:600; text-transform:uppercase;
-  font-size:clamp(2.3rem,6vw,4.8rem); line-height:1; letter-spacing:-.01em;
-  max-width:17ch; margin-bottom:1.6rem;
+  font-size:clamp(2rem,5.2vw,4rem); line-height:1.04; letter-spacing:-.015em;
+  margin-bottom:1.6rem;
 }
 .hero-title .line{display:block}
 .hero-title em{font-style:normal; font-weight:700; color:#7fd0ee}
@@ -284,11 +284,12 @@ p{margin:0 0 1rem}
 /* ============================================================
    REVIEWS
    ============================================================ */
-.reviews{padding:clamp(4rem,9vw,7rem) 0; background:var(--paper)}
+.reviews{padding:clamp(4rem,9vw,7rem) 0; background:var(--ink); color:var(--paper)}
+.reviews .sec-title{color:var(--white)}
 .reviews .sec-head .sec-num{display:block}
 .rating{display:inline-flex; align-items:center; gap:.35rem; margin-top:1.4rem; flex-wrap:wrap; justify-content:center}
 .rating svg{width:26px; height:26px; fill:var(--cyan); stroke:none}
-.rating span{width:100%; margin-top:.5rem; font-size:.9rem; color:var(--ink-soft); letter-spacing:.01em}
+.rating span{width:100%; margin-top:.5rem; font-size:.9rem; color:rgba(245,240,231,.72); letter-spacing:.01em}
 .reviews-embed{margin-top:clamp(2rem,4vw,3rem); min-height:160px}
 .reviews-fallback{
   border:1px dashed var(--line); border-radius:8px; background:var(--paper-2);
