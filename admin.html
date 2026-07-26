@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Painel de Fotos (Demo) | Floor's Leader</title>
+<link rel="icon" type="image/png" href="assets/logo/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  @font-face{
+    font-family:"Restore";
+    src:url("assets/fonts/restore-black.woff2") format("woff2"),
+        url("assets/fonts/restore-black.woff") format("woff");
+    font-weight:900; font-style:normal; font-display:swap;
+  }
+  :root{
+    --bg:#f5f0e7; --surface:#fffdf9; --surface-2:#ece3d5; --line:rgba(22,24,27,.14);
+    --blue:#2c6bb3; --blue-deep:#1c4c85; --cyan:#26abd6; --char:#3d3f42;
+    --ink:#16181b; --dim:#5b6068; --white:#fffdf9;
+    --f-head:"Archivo","Segoe UI",system-ui,sans-serif;
+    --f-body:"Hanken Grotesk","Segoe UI",system-ui,sans-serif;
+    --f-display:"Restore","Arial Black",sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);line-height:1.6;
+    background-image:radial-gradient(1100px 420px at 50% -8%,rgba(44,107,179,.08),transparent 68%);min-height:100vh;}
+  a{color:inherit;text-decoration:none;}
+  .wrap{max-width:860px;margin:0 auto;padding:0 20px 90px;}
+
+  .admin-top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px 0;border-bottom:1px solid var(--line);flex-wrap:wrap;}
+  .admin-brand{display:flex;align-items:center;gap:14px;}
+  .admin-brand img{height:46px;width:auto;}
+  .admin-brand .t{font-family:var(--f-display);font-size:18px;color:var(--ink);line-height:1.1;text-transform:uppercase;letter-spacing:.02em;}
+  .admin-brand .t small{display:block;color:var(--blue);font-family:var(--f-body);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-top:3px;}
+  .back-link{font-size:13px;font-weight:600;color:var(--dim);border:1px solid var(--line);padding:9px 16px;border-radius:8px;transition:.2s;}
+  .back-link:hover{color:var(--blue);border-color:var(--blue);}
+
+  .demo-banner{margin:22px 0;padding:14px 18px;border-radius:12px;background:rgba(44,107,179,.08);border:1px solid rgba(44,107,179,.35);color:var(--blue-deep);font-size:14px;display:flex;gap:10px;align-items:flex-start;}
+  .demo-banner b{color:var(--ink);}
+  .demo-banner svg{flex-shrink:0;margin-top:2px;}
+
+  h1{font-family:var(--f-head);font-weight:600;text-transform:uppercase;letter-spacing:-.01em;font-size:28px;color:var(--ink);margin:26px 0 6px;}
+  .sub{color:var(--dim);margin:0 0 26px;font-size:15px;}
+
+  .step{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:20px;box-shadow:0 18px 50px -30px rgba(22,24,27,.4);}
+  .step-head{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+  .step-num{width:30px;height:30px;border-radius:50%;background:var(--blue);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;font-family:var(--f-head);}
+  .step-head h2{margin:0;font-family:var(--f-head);font-size:18px;font-weight:600;color:var(--ink);}
+
+  .cats{display:flex;flex-wrap:wrap;gap:10px;}
+  .cat{padding:11px 18px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:14px;font-weight:600;cursor:pointer;transition:.2s;font-family:inherit;}
+  .cat:hover{border-color:var(--blue);}
+  .cat.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .cat small{opacity:.65;font-weight:500;margin-left:5px;}
+  .cat.active small{opacity:.8;}
+
+  .drop{border:2px dashed var(--line);border-radius:14px;padding:44px 20px;text-align:center;cursor:pointer;transition:.25s;background:var(--bg);}
+  .drop:hover,.drop.drag{border-color:var(--blue);background:rgba(44,107,179,.06);}
+  .drop svg{color:var(--blue);margin-bottom:12px;}
+  .drop .big{font-family:var(--f-head);font-size:17px;color:var(--ink);font-weight:600;margin-bottom:4px;}
+  .drop .small{font-size:13px;color:var(--dim);}
+  #fileInput{display:none;}
+
+  .previews{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;margin-top:18px;}
+  .thumb{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:var(--surface-2);}
+  .thumb img{width:100%;height:100%;object-fit:cover;}
+  .thumb .rm{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.7);color:#fff;border:0;cursor:pointer;font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center;}
+  .thumb .rm:hover{background:#c0392b;}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:var(--f-head);font-weight:600;text-transform:uppercase;letter-spacing:.02em;padding:16px 30px;border-radius:12px;border:1.5px solid var(--ink);background:var(--ink);color:#fff;font-size:15px;cursor:pointer;transition:.25s;width:100%;}
+  .btn:hover{background:var(--blue-deep);border-color:var(--blue-deep);}
+  .btn:disabled{opacity:.4;cursor:not-allowed;background:var(--ink);border-color:var(--ink);}
+
+  .success{display:none;margin-top:8px;padding:20px;border-radius:14px;background:rgba(38,171,214,.12);border:1px solid rgba(38,171,214,.5);color:var(--blue-deep);}
+  .success.show{display:block;}
+  .success b{color:var(--ink);}
+  .success .demo-note{display:block;margin-top:10px;padding-top:10px;border-top:1px solid rgba(22,24,27,.14);color:var(--dim);font-size:13px;}
+
+  .overview{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;}
+  .ov-card{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center;}
+  .ov-card .n{font-family:var(--f-display);font-size:28px;color:var(--blue);}
+  .ov-card .l{font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;font-weight:600;}
+  .hint{font-size:13px;color:var(--dim);margin-top:14px;text-align:center;}
+
+  .welcome{background:linear-gradient(100deg,rgba(44,107,179,.12),rgba(38,171,214,.05));border:1px solid rgba(44,107,179,.3);border-radius:16px;padding:24px 26px;margin:22px 0;}
+  .welcome h3{margin:0 0 10px;font-family:var(--f-head);font-size:20px;color:var(--blue-deep);font-weight:600;}
+  .welcome p{margin:0 0 12px;font-size:15px;color:var(--ink);}
+  .welcome p:last-child{margin-bottom:0;}
+  .welcome .tip{background:rgba(255,255,255,.6);border-left:3px solid var(--cyan);border-radius:8px;padding:12px 16px;font-size:14px;color:var(--dim);}
+  .welcome .tip b{color:var(--ink);}
+
+  @media (max-width:600px){
+    .wrap{padding:0 16px 100px;}
+    .admin-top{padding:16px 0;gap:12px;}
+    .admin-brand img{height:40px;}
+    .admin-brand .t{font-size:16px;}
+    h1{font-size:23px;margin-top:22px;}
+    .sub{font-size:14px;}
+    .step{padding:18px 16px;border-radius:14px;}
+    .welcome{padding:20px 18px;}
+    .welcome h3{font-size:18px;}
+    .cats{gap:8px;}
+    .cat{padding:10px 14px;font-size:13px;flex:1 1 auto;text-align:center;}
+    .drop{padding:34px 16px;}
+    .previews{grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;}
+    .btn{padding:16px 20px;font-size:14px;}
+    .overview{grid-template-columns:repeat(2,1fr);}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="admin-top">
+    <a class="admin-brand" href="index.html">
+      <img src="assets/logo/mark.jpg" alt="Floor's Leader">
+      <span class="t">Painel de Fotos<small>Photo Manager</small></span>
+    </a>
+    <a class="back-link" href="index.html">← Voltar ao site</a>
+  </div>
+
+  <div class="demo-banner">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+    <div><b>Versão demonstrativa.</b> Isto mostra como o Airton adicionaria fotos. As imagens aparecem aqui como preview, mas <b>ainda não são salvas de verdade</b>. Na versão final, elas iriam direto para a galeria do site.</div>
+  </div>
+
+  <div class="welcome">
+    <h3>E aí, Airton! 👋</h3>
+    <p>Seu site é a sua vitrine, e quem manda nela é você. Acabou de entregar um piso caprichado ou um banheiro reformado? Bateu umas fotos boas? Então bora colocar aqui pra todo mundo ver o seu trabalho!</p>
+    <p>É rapidinho, em 3 toques: escolhe a categoria, joga as fotos e publica. Prontinho, já aparece no site.</p>
+    <div class="tip">💡 <b>Dica de ouro:</b> quanto mais fotos reais dos seus projetos, mais o cliente confia e mais orçamento cai na sua mão. Capriche na luz e, se der, mostre o antes e o depois. Bora deixar esse site brilhando!</div>
+  </div>
+
+  <h1>Adicionar fotos à galeria</h1>
+  <p class="sub">Escolha a categoria, adicione as fotos do celular ou do computador, e toque em publicar.</p>
+
+  <!-- STEP 1 -->
+  <div class="step">
+    <div class="step-head"><span class="step-num">1</span><h2>Escolha a categoria</h2></div>
+    <div class="cats" id="cats">
+      <button class="cat active" data-cat="Hardwood Flooring">Hardwood Flooring <small>hardwood</small></button>
+      <button class="cat" data-cat="Bathroom Remodeling">Bathroom Remodeling <small>banheiros</small></button>
+      <button class="cat" data-cat="Backyard Kitchens">Backyard Kitchens <small>cozinhas</small></button>
+      <button class="cat" data-cat="Decks & Porches">Decks &amp; Porches <small>decks</small></button>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step">
+    <div class="step-head"><span class="step-num">2</span><h2>Adicione as fotos</h2></div>
+    <div class="drop" id="drop">
+      <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+      <div class="big">Arraste as fotos aqui</div>
+      <div class="small">ou toque para escolher do dispositivo</div>
+    </div>
+    <input type="file" id="fileInput" accept="image/*" multiple>
+    <div class="previews" id="previews"></div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step">
+    <div class="step-head"><span class="step-num">3</span><h2>Publicar</h2></div>
+    <button class="btn" id="publishBtn" disabled>Adicionar à galeria</button>
+    <div class="success" id="success"></div>
+    <p class="hint">As fotos entram na categoria escolhida e aparecem no site automaticamente.</p>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="step">
+    <div class="step-head"><span class="step-num" style="background:var(--surface);color:var(--blue);border:1px solid var(--blue)">✓</span><h2>Galeria atual</h2></div>
+    <div class="overview" id="overview">
+      <div class="ov-card"><div class="n" data-cat="Hardwood Flooring">80</div><div class="l">Hardwood</div></div>
+      <div class="ov-card"><div class="n" data-cat="Bathroom Remodeling">13</div><div class="l">Bathrooms</div></div>
+      <div class="ov-card"><div class="n" data-cat="Backyard Kitchens">7</div><div class="l">Kitchens</div></div>
+      <div class="ov-card"><div class="n" data-cat="Decks & Porches">8</div><div class="l">Decks</div></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let activeCat = 'Hardwood Flooring';
+  let files = [];
+
+  const cats = document.getElementById('cats');
+  const drop = document.getElementById('drop');
+  const fileInput = document.getElementById('fileInput');
+  const previews = document.getElementById('previews');
+  const publishBtn = document.getElementById('publishBtn');
+  const success = document.getElementById('success');
+
+  cats.addEventListener('click', e => {
+    const b = e.target.closest('.cat'); if (!b) return;
+    cats.querySelectorAll('.cat').forEach(c => c.classList.remove('active'));
+    b.classList.add('active');
+    activeCat = b.dataset.cat;
+    success.classList.remove('show');
+  });
+
+  drop.addEventListener('click', () => fileInput.click());
+  ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('drag'); }));
+  ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('drag'); }));
+  drop.addEventListener('drop', e => addFiles(e.dataTransfer.files));
+  fileInput.addEventListener('change', () => addFiles(fileInput.files));
+
+  function addFiles(list) {
+    [...list].forEach(f => { if (f.type.startsWith('image/')) files.push(f); });
+    render();
+  }
+  function render() {
+    previews.innerHTML = '';
+    files.forEach((f, i) => {
+      const url = URL.createObjectURL(f);
+      const d = document.createElement('div');
+      d.className = 'thumb';
+      d.innerHTML = `<img src="${url}" alt=""><button class="rm" title="Remover">&times;</button>`;
+      d.querySelector('.rm').addEventListener('click', () => { files.splice(i, 1); render(); });
+      previews.appendChild(d);
+    });
+    publishBtn.disabled = files.length === 0;
+    success.classList.remove('show');
+  }
+
+  publishBtn.addEventListener('click', () => {
+    if (!files.length) return;
+    const n = files.length;
+    success.innerHTML = `<b>✓ ${n} foto${n>1?'s':''} pronta${n>1?'s':''} para "${activeCat}"!</b>`
+      + `<span class="demo-note">Isto é uma demonstração: nesta versão as fotos não são salvas. Na versão final, elas seriam enviadas e apareceriam na galeria "${activeCat}" do site na hora.</span>`;
+    files = [];
+    fileInput.value = '';
+    render();
+    publishBtn.disabled = true;
+    success.classList.add('show');
+    success.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+</script>
+</body>
+</html>
