@@ -347,7 +347,7 @@ p{margin:0 0 1rem}
    ============================================================ */
 .site-footer{background:#101215; color:rgba(245,240,231,.75); padding:clamp(3rem,6vw,4.5rem) 0 2rem}
 .footer-inner{display:grid; grid-template-columns:2fr 1fr 1fr 1.4fr; gap:2rem}
-.footer-logo{width:150px; margin-bottom:1.1rem}
+.footer-logo{width:280px; max-width:100%; margin:-30px 0 -10px -20px; mix-blend-mode:screen}
 .footer-brand p{font-size:.95rem; max-width:34ch; margin:0}
 .footer-nav{display:flex; flex-direction:column; gap:.55rem}
 .footer-nav h4{font-family:var(--f-body); text-transform:uppercase; letter-spacing:.14em; font-size:.72rem; color:var(--cyan); margin-bottom:.5rem; font-weight:700}
