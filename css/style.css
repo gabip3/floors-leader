@@ -448,7 +448,7 @@ p{margin:0 0 1rem}
   /* when the menu is open at the top of the page, force dark logo/toggle so they stay visible on the light sheet */
   .site-header.menu-open{background:var(--paper)}
   .site-header.menu-open .brand-word{color:var(--ink)}
-  .site-header.menu-open .brand-mark{mix-blend-mode:multiply; filter:none}
+  .site-header.menu-open .brand-mark{filter:none}
   .site-header.menu-open .menu-toggle span{background:var(--ink)}
   .hero{min-height:90svh}
   .hero-inner{padding-top:7rem}
@@ -460,8 +460,12 @@ p{margin:0 0 1rem}
   .value-grid{grid-template-columns:1fr}
   .svc-grid{grid-template-columns:1fr}
   .cat-grid{grid-template-columns:1fr}
-  .footer-inner{grid-template-columns:1fr}
-  .footer-bottom{flex-direction:column; align-items:flex-start; gap:.5rem}
+  .footer-inner{grid-template-columns:1fr; text-align:center}
+  .footer-brand{display:flex; flex-direction:column; align-items:center}
+  .footer-logo{margin:0 0 .6rem}
+  .footer-brand p{max-width:38ch}
+  .footer-nav{align-items:center}
+  .footer-bottom{flex-direction:column; align-items:center; gap:.5rem; text-align:center}
   .contact-form .row{grid-template-columns:1fr}
   .hero-cta{flex-direction:column; align-items:stretch}
   .hero-cta .btn{justify-content:center}
