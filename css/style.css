@@ -131,7 +131,6 @@ p{margin:0 0 1rem}
 /* ============================================================
    HERO
    ============================================================ */
-.hero-brand-intro{display:none}
 .hero{position:relative; min-height:100svh; display:flex; align-items:flex-end; overflow:hidden}
 .hero-media{position:absolute; inset:0; z-index:0}
 .hero-media video{width:100%; height:100%; object-fit:cover}
@@ -449,18 +448,12 @@ p{margin:0 0 1rem}
   /* when the menu is open at the top of the page, force dark logo/toggle so they stay visible on the light sheet */
   .site-header.menu-open{background:var(--paper)}
   .site-header.menu-open .menu-toggle span{background:var(--ink)}
-  .brand-lockup{height:60px; margin:-12px 0}
-  /* the header's first paint now sits over the light brand-intro block (not the dark
-     hero video), so the hamburger icon must stay dark on mobile regardless of scroll state */
-  .menu-toggle span{background:var(--ink)}
-  /* big centered brand splash above the hero video, replaces the small eyebrow line.
-     Padding is just enough to clear the fixed header (~71px) with a small gap, so the
-     logo sits right under the nav bar instead of far down the page. */
-  .hero-brand-intro{
-    display:flex; align-items:center; justify-content:center;
-    padding:5.5rem 1.5rem .9rem; background:var(--paper);
-  }
-  .hero-brand-logo{height:clamp(100px,30vw,140px); width:auto; filter:drop-shadow(0 6px 16px rgba(15,17,20,.22))}
+  /* single logo on mobile: bigger, centered in the header bar (no separate block,
+     nothing that can look duplicated or leave a gap) */
+  .header-inner{position:relative}
+  .brand{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); margin:0}
+  .menu-toggle{margin-left:auto}
+  .brand-lockup{height:64px; width:auto; margin:0}
   .hero .eyebrow{display:none}
   .hero{min-height:90svh}
   .hero-inner{padding-top:7rem}
