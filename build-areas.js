@@ -1,0 +1,410 @@
+// Generates the /areas/<city>.html local-SEO pages from the data below.
+// Re-run after editing this file: node build-areas.js
+"use strict";
+const fs = require("fs");
+const path = require("path");
+
+const OUT_DIR = path.join(__dirname, "areas");
+const SITE_URL = "https://www.floorsleader.net";
+
+const CITIES = [
+  {
+    slug: "atlanta",
+    name: "Atlanta",
+    heroImg: "assets/flooring/flooring-05.jpg",
+    metaDesc: "Hardwood flooring installation, sanding, refinishing and bathroom remodeling in Atlanta, GA. Family-owned, licensed & insured. Free quotes.",
+    lead: "Floor's Leader is based right in the Atlanta area, and it's where most of our work happens: hardwood installs, full refinishes, and bathroom remodels for homes across the city.",
+    p1: "Atlanta homes cover a lot of ground, from older houses with original hardwood worth bringing back to life, to newer builds where carpet is finally coming out for something more durable. Either way, we've likely worked on a floor plan close to yours.",
+    p2: "Because we're local, scheduling a walkthrough is easy and quotes come back fast. Tell us what room you're working on and we'll take it from there.",
+    photos: ["assets/flooring/flooring-05.jpg", "assets/flooring/flooring-19.jpg", "assets/bathroom/bathroom-01.jpeg", "assets/decks/decks-01.jpeg"]
+  },
+  {
+    slug: "kennesaw",
+    name: "Kennesaw",
+    heroImg: "assets/flooring/flooring-10.jpg",
+    metaDesc: "Hardwood flooring & bathroom remodeling in Kennesaw, GA. Sanding, refinishing, new installs. Licensed & insured, free quotes from a local crew.",
+    lead: "We take on hardwood and remodeling projects in Kennesaw regularly, from full-home installs to single-room refinishes.",
+    p1: "A lot of the calls we get from Kennesaw start the same way: a floor that's seen better days, or a room still stuck with carpet. We walk the space, tell you honestly what it needs, and quote a fair price.",
+    p2: "No pressure, no upsell. If a sand-and-refinish will do the job, that's what we'll recommend, not a full replacement you don't need.",
+    photos: ["assets/flooring/flooring-10.jpg", "assets/flooring/flooring-22.jpg", "assets/bathroom/bathroom-04.jpeg", "assets/kitchen/kitchen-01.jpeg"]
+  },
+  {
+    slug: "marietta",
+    name: "Marietta",
+    heroImg: "assets/flooring/flooring-14.jpg",
+    metaDesc: "Floor's Leader serves Marietta, GA with hardwood installation, refinishing and bathroom remodeling. Family-owned, licensed & insured.",
+    lead: "Marietta is one of the areas we work in most, and it shows in the range of projects: fresh installs, deep refinishes, and full bathroom remodels.",
+    p1: "Whether your hardwood just needs a good sanding and a new coat, or a room needs to come up entirely and go back down with new boards, we'll give you a straight answer before any work starts.",
+    p2: "We use brand-name finishes and materials, not the cheapest option available, because floors done right should hold up for years, not just look good on install day.",
+    photos: ["assets/flooring/flooring-14.jpg", "assets/flooring/flooring-24.jpg", "assets/bathroom/bathroom-05.jpeg", "assets/decks/decks-02.jpeg"]
+  },
+  {
+    slug: "acworth",
+    name: "Acworth",
+    heroImg: "assets/flooring/flooring-19.jpg",
+    metaDesc: "Hardwood flooring installation, refinishing & bathroom remodeling in Acworth, GA. Free quotes from a licensed, family-owned local team.",
+    lead: "Acworth homeowners come to us for the same reasons most people do: a floor that needs saving, or a room ready for an upgrade.",
+    p1: "We handle both ends of the job, hardwood and the rest of the remodel, so if a bathroom or backyard project is part of the plan too, we can scope that out in the same visit.",
+    p2: "Send us a few details about the space and we'll follow up with a free quote, usually within a day.",
+    photos: ["assets/flooring/flooring-19.jpg", "assets/flooring/flooring-08.jpg", "assets/kitchen/kitchen-02.jpeg", "assets/bathroom/bathroom-02.jpeg"]
+  },
+  {
+    slug: "dallas",
+    name: "Dallas",
+    heroImg: "assets/flooring/flooring-22.jpg",
+    metaDesc: "Floor's Leader provides hardwood flooring and bathroom remodeling services in Dallas, GA. Licensed, insured, and family-owned.",
+    lead: "We're happy to take on projects out in Dallas, from single-room refinishes to full hardwood installs and bathroom remodels.",
+    p1: "Distance isn't an issue, we'll come out for a walkthrough, measure what needs measuring, and give you a real number, not a rough guess over the phone.",
+    p2: "If you're comparing quotes, ask us about the finish and materials we use. It's usually where the biggest differences between contractors show up.",
+    photos: ["assets/flooring/flooring-22.jpg", "assets/flooring/flooring-16.jpg", "assets/decks/decks-03.jpeg", "assets/bathroom/bathroom-01.jpeg"]
+  },
+  {
+    slug: "douglasville",
+    name: "Douglasville",
+    heroImg: "assets/flooring/flooring-24.jpg",
+    metaDesc: "Hardwood flooring, refinishing and bathroom remodeling in Douglasville, GA. Family-owned, licensed & insured. Get a free quote today.",
+    lead: "Douglasville is part of our regular service area for hardwood installs, refinishing, and bathroom remodeling work.",
+    p1: "Every job starts with a look at the actual floor or room, not a phone estimate. That's the only way to quote it fairly and avoid surprises once work begins.",
+    p2: "We're a small, family-owned shop, so you're talking to the people actually doing the work, not a call center.",
+    photos: ["assets/flooring/flooring-24.jpg", "assets/flooring/flooring-13.jpg", "assets/kitchen/kitchen-03.jpeg", "assets/bathroom/bathroom-04.jpeg"]
+  }
+];
+
+const SERVICES = [
+  { name: "Hardwood Installation", d: "New solid & engineered hardwood, or a clean switch from carpet to a harder surface." },
+  { name: "Sanding & Refinishing", d: "Dustless sanding and premium finishes that bring tired floors back to life." },
+  { name: "Recoating & Repairs", d: "Board replacement, patching and screen-and-recoat to protect your investment." },
+  { name: "Bathroom Remodeling", d: "Full bath transformations: tile, vanities, fixtures and finishes, start to finish." }
+];
+
+function otherCities(current) {
+  return CITIES.filter(c => c.slug !== current.slug);
+}
+
+function page(city) {
+  const others = otherCities(city);
+  const othersLinks = others.map(c => `<a href="${c.slug}.html">${c.name}, GA</a>`).join("\n          ");
+  const othersSchema = others.map(c => `{ "@type": "City", "name": "${c.name}" }`).join(",\n    ");
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hardwood Flooring &amp; Remodeling in ${city.name}, GA | Floor's Leader</title>
+<meta name="description" content="${city.metaDesc}">
+<link rel="canonical" href="${SITE_URL}/areas/${city.slug}.html">
+<meta name="theme-color" content="#2c6bb3">
+<meta name="geo.region" content="US-GA">
+<meta name="geo.placename" content="${city.name}, Georgia">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Floor's Leader">
+<meta property="og:title" content="Hardwood Flooring &amp; Remodeling in ${city.name}, GA | Floor's Leader">
+<meta property="og:description" content="${city.metaDesc}">
+<meta property="og:url" content="${SITE_URL}/areas/${city.slug}.html">
+<meta property="og:image" content="${SITE_URL}/assets/logo/logo-new.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Hardwood Flooring &amp; Remodeling in ${city.name}, GA">
+<meta name="twitter:description" content="${city.metaDesc}">
+<meta name="twitter:image" content="${SITE_URL}/assets/logo/logo-new.png">
+
+<link rel="icon" href="../assets/logo/favicon-new.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css?v=3">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HomeAndConstructionBusiness",
+  "name": "Floor's Leader",
+  "description": "Hardwood flooring installation, sanding, refinishing and bathroom remodeling serving ${city.name}, GA and the metro Atlanta area.",
+  "image": "${SITE_URL}/assets/flooring/flooring-01.jpg",
+  "logo": "${SITE_URL}/assets/logo/logo-new.png",
+  "url": "${SITE_URL}/areas/${city.slug}.html",
+  "telephone": "+1-404-547-4336",
+  "email": "airtonogueira@gmail.com",
+  "priceRange": "$$",
+  "address": { "@type": "PostalAddress", "addressLocality": "${city.name}", "addressRegion": "GA", "addressCountry": "US" },
+  "areaServed": { "@type": "City", "name": "${city.name}" },
+  "makesOffer": [
+    { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Hardwood Flooring Installation" } },
+    { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Floor Sanding & Refinishing" } },
+    { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Bathroom Remodeling" } }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "${SITE_URL}/" },
+    { "@type": "ListItem", "position": 2, "name": "Service Areas", "item": "${SITE_URL}/index.html#areas" },
+    { "@type": "ListItem", "position": 3, "name": "${city.name}, GA", "item": "${SITE_URL}/areas/${city.slug}.html" }
+  ]
+}
+</script>
+</head>
+<body>
+
+<header class="site-header" id="header">
+  <div class="wrap header-inner">
+    <a class="brand" href="../index.html" aria-label="Floor's Leader home">
+      <img src="../assets/logo/logo-new.png" alt="Floor's Leader" class="brand-lockup">
+    </a>
+    <nav class="nav" aria-label="Primary">
+      <a href="../index.html#services">Services</a>
+      <a href="../index.html#work">Projects</a>
+      <a href="../index.html#about">About</a>
+      <a href="../blog/index.html">Journal</a>
+      <a href="../index.html#contact">Contact</a>
+    </nav>
+    <a class="btn btn-phone" href="tel:+14045474336">
+      <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M6.6 10.8a15.5 15.5 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.24 11.4 11.4 0 0 0 3.6.58 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.4 11.4 0 0 0 .58 3.6 1 1 0 0 1-.24 1Z"/></svg>
+      <span>(404)&nbsp;547-4336</span>
+    </a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="../index.html#services">Services</a>
+    <a href="../index.html#work">Projects</a>
+    <a href="../index.html#about">About</a>
+    <a href="../blog/index.html">Journal</a>
+    <a href="../index.html#contact">Contact</a>
+    <a class="btn btn-solid" href="../index.html#contact">Request a free quote</a>
+  </div>
+</header>
+
+<main>
+
+<!-- ===== HERO (photo, not video) ===== -->
+<section class="hero" id="hero" style="min-height:64svh">
+  <div class="hero-media">
+    <img src="../${city.heroImg}" alt="Hardwood flooring project in ${city.name}, GA" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0">
+    <div class="hero-scrim"></div>
+  </div>
+  <div class="wrap hero-inner">
+    <nav aria-label="Breadcrumb" style="margin-bottom:1rem">
+      <ol style="list-style:none;display:flex;gap:.5rem;padding:0;margin:0;font-size:.85rem;color:rgba(255,255,255,.75)">
+        <li><a href="../index.html" style="color:inherit">Home</a></li>
+        <li aria-hidden="true">/</li>
+        <li><a href="../index.html#areas" style="color:inherit">Service Areas</a></li>
+        <li aria-hidden="true">/</li>
+        <li aria-current="page" style="color:#fff">${city.name}, GA</li>
+      </ol>
+    </nav>
+    <h1 class="hero-title reveal" style="max-width:18ch">
+      <span class="line">Hardwood Flooring &amp;</span>
+      <span class="line">Remodeling in <em>${city.name}, GA</em></span>
+    </h1>
+    <p class="hero-sub reveal">${city.lead}</p>
+    <div class="hero-cta reveal">
+      <a class="btn btn-solid" href="#contact">Get a free quote</a>
+      <a class="btn btn-ghost-light" href="tel:+14045474336">Call (404) 547-4336</a>
+    </div>
+    <ul class="hero-trust reveal">
+      <li>Licensed &amp; Insured</li>
+      <li>Family-owned</li>
+      <li>Free quotes</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ===== ABOUT THIS AREA ===== -->
+<section class="about">
+  <div class="wrap about-grid">
+    <div class="about-copy reveal">
+      <header class="sec-head">
+        <h2 class="sec-title">Serving ${city.name} homeowners</h2>
+      </header>
+      <p>${city.p1}</p>
+      <p>${city.p2}</p>
+    </div>
+    <figure class="about-ba reveal">
+      <img src="../${city.photos[0]}" alt="Hardwood flooring in ${city.name}" style="width:100%;border-radius:3px;box-shadow:var(--shadow);aspect-ratio:4/3;object-fit:cover">
+    </figure>
+  </div>
+</section>
+
+<!-- ===== SERVICES ===== -->
+<section class="services">
+  <div class="wrap">
+    <header class="sec-head reveal">
+      <h2 class="sec-title">What we do in ${city.name}</h2>
+      <p class="sec-lead">The same crew, materials and finishes on every job, no matter the neighborhood.</p>
+    </header>
+    <div class="svc-grid">
+      ${SERVICES.map(s => `<article class="svc reveal">
+        <h3>${s.name}</h3>
+        <p>${s.d}</p>
+      </article>`).join("\n      ")}
+    </div>
+  </div>
+</section>
+
+<!-- ===== PHOTOS ===== -->
+<section class="work">
+  <div class="wrap">
+    <header class="sec-head reveal">
+      <h2 class="sec-title">Recent work</h2>
+      <p class="sec-lead">A few photos from projects like yours. <a href="../index.html#work">See the full gallery →</a></p>
+    </header>
+    <div class="post-grid">
+      ${city.photos.map(p => `<div class="post-card"><div class="post-thumb"><img src="../${p}" alt="Floor's Leader project" loading="lazy"></div></div>`).join("\n      ")}
+    </div>
+  </div>
+</section>
+
+<!-- ===== REVIEWS ===== -->
+<section class="reviews">
+  <div class="wrap">
+    <header class="sec-head reveal" style="text-align:center;margin-inline:auto">
+      <h2 class="sec-title">What our customers say</h2>
+    </header>
+    <div class="reviews-embed reveal">
+      <script src="https://elfsightcdn.com/platform.js" async></script>
+      <div class="elfsight-app-136bd5a7-f1d1-4573-9dc4-ee1a7611cb64" data-elfsight-app-lazy></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== OTHER AREAS ===== -->
+<section class="areas">
+  <div class="wrap">
+    <header class="sec-head reveal" style="text-align:center;margin-inline:auto">
+      <span class="eyebrow" style="display:block">Also serving</span>
+      <h2 class="sec-title">Other areas we work in</h2>
+    </header>
+    <ul class="area-list reveal">
+      ${others.map(c => `<li><a href="${c.slug}.html" style="color:inherit;display:contents"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg>${c.name}</a></li>`).join("\n      ")}
+    </ul>
+  </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="cta-band">
+  <div class="wrap cta-inner reveal">
+    <p class="cta-kicker">Ready when you are</p>
+    <h2 class="cta-title">Let's talk about your <em>${city.name} project.</em></h2>
+    <div class="cta-actions">
+      <a class="btn btn-solid" href="#contact">Request a free quote</a>
+      <a class="btn btn-ghost" href="tel:+14045474336">Call (404) 547-4336</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CONTACT ===== -->
+<section class="contact" id="contact">
+  <div class="wrap contact-grid">
+    <div class="contact-copy reveal">
+      <header class="sec-head">
+        <h2 class="sec-title">Get a free quote</h2>
+      </header>
+      <p>Tell us about your ${city.name} project and we'll get back to you the same day.</p>
+      <ul class="contact-list">
+        <li>
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M6.6 10.8a15.5 15.5 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.24 11.4 11.4 0 0 0 3.6.58 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.4 11.4 0 0 0 .58 3.6 1 1 0 0 1-.24 1Z"/></svg>
+          <a href="tel:+14045474336">(404) 547-4336</a>
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+          <a href="mailto:airtonogueira@gmail.com">airtonogueira@gmail.com</a>
+        </li>
+      </ul>
+    </div>
+    <form class="contact-form reveal" id="quoteForm" novalidate>
+      <input type="hidden" name="access_key" value="YOUR_WEB3FORMS_ACCESS_KEY">
+      <input type="hidden" name="subject" value="New quote request — ${city.name} — Floor's Leader">
+      <input type="hidden" name="from_name" value="Floor's Leader website">
+      <input type="hidden" name="replyto" value="">
+      <input type="hidden" name="area" value="${city.name}, GA">
+      <input type="checkbox" name="botcheck" style="display:none" tabindex="-1" autocomplete="off">
+      <div class="row">
+        <div class="field">
+          <label for="first">First name</label>
+          <input id="first" name="first" type="text" autocomplete="given-name" required>
+        </div>
+        <div class="field">
+          <label for="last">Last name</label>
+          <input id="last" name="last" type="text" autocomplete="family-name" required>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label for="phone">Phone</label>
+          <input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="(404) 000-0000">
+        </div>
+      </div>
+      <div class="field">
+        <label for="service">What do you need?</label>
+        <select id="service" name="service">
+          <option value="">Select a service…</option>
+          <option value="Hardwood Installation">Hardwood installation</option>
+          <option value="Sanding & Refinishing">Sanding &amp; refinishing</option>
+          <option value="Recoating & Repairs">Recoating &amp; repairs</option>
+          <option value="Bathroom Remodeling">Bathroom remodeling</option>
+          <option value="Not sure yet">Not sure yet</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="msg">Tell us about the project</label>
+        <textarea id="msg" name="message" rows="4" placeholder="Room size, current flooring, timeline…"></textarea>
+      </div>
+      <button type="submit" class="btn btn-solid btn-block">Send request</button>
+      <p class="form-note" id="formNote" role="status" aria-live="polite"></p>
+    </form>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <div class="footer-brand">
+      <img src="../assets/logo/logo-new.png" alt="Floor's Leader" class="footer-logo">
+    </div>
+    <nav class="footer-nav" aria-label="Footer">
+      <h4>Company</h4>
+      <a href="../index.html#services">Services</a>
+      <a href="../index.html#work">Projects</a>
+      <a href="../index.html#about">About</a>
+      <a href="../blog/index.html">Journal</a>
+      <a href="../index.html#contact">Contact</a>
+    </nav>
+    <div class="footer-nav">
+      <h4>Service areas</h4>
+      ${CITIES.map(c => `<a href="${c.slug}.html">${c.name}</a>`).join("\n      ")}
+    </div>
+    <div class="footer-nav">
+      <h4>Contact</h4>
+      <a href="tel:+14045474336">(404) 547-4336</a>
+      <a href="mailto:airtonogueira@gmail.com">airtonogueira@gmail.com</a>
+    </div>
+  </div>
+  <div class="wrap footer-bottom">
+    <span>© <span id="yr"></span> Floor's Leader. All rights reserved.</span>
+    <span class="footer-tag">Licensed &amp; Insured · ${city.name}, GA</span>
+  </div>
+</footer>
+
+<script src="../js/main.js?v=3"></script>
+</body>
+</html>
+`;
+}
+
+if (!fs.existsSync(OUT_DIR)) fs.mkdirSync(OUT_DIR, { recursive: true });
+CITIES.forEach(city => {
+  const html = page(city);
+  fs.writeFileSync(path.join(OUT_DIR, `${city.slug}.html`), html, "utf8");
+  console.log("wrote areas/" + city.slug + ".html");
+});
