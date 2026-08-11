@@ -101,12 +101,8 @@ p{margin:0 0 1rem}
   box-shadow:0 1px 0 var(--line-soft);
 }
 .header-inner{display:flex; align-items:center; gap:1.5rem; padding-block:.6rem}
-.brand{display:flex; align-items:center; gap:.7rem; margin-right:auto}
-.brand-mark{width:42px; height:42px; object-fit:contain}
-.brand-word{
-  font-family:var(--f-display); font-weight:700; font-size:.85rem; letter-spacing:.04em;
-  color:var(--ink); text-transform:uppercase;
-}
+.brand{display:flex; align-items:center; margin-right:auto}
+.brand-lockup{height:76px; width:auto; margin:-16px 0; display:block; filter:drop-shadow(0 3px 10px rgba(15,17,20,.25))}
 .site-header:not(.scrolled) .hero + *{}
 .nav{display:flex; gap:2rem}
 .nav a{
@@ -122,10 +118,8 @@ p{margin:0 0 1rem}
 .btn-phone .ico{width:16px; height:16px; stroke:var(--blue)}
 
 /* header over dark hero */
-.site-header:not(.scrolled) .brand-word,
 .site-header:not(.scrolled) .nav a,
 .site-header:not(.scrolled) .btn-phone{color:#fff}
-.site-header:not(.scrolled) .brand-mark{mix-blend-mode:normal; filter:drop-shadow(0 2px 6px rgba(0,0,0,.4))}
 .site-header:not(.scrolled) .btn-phone{border-color:rgba(255,255,255,.35)}
 .site-header:not(.scrolled) .btn-phone .ico{stroke:var(--cyan)}
 
@@ -372,13 +366,19 @@ p{margin:0 0 1rem}
 .contact-form .row{display:grid; grid-template-columns:1fr 1fr; gap:1rem}
 .field{margin-bottom:1.1rem; display:flex; flex-direction:column}
 .field label{font-size:.82rem; font-weight:600; letter-spacing:.02em; margin-bottom:.45rem; color:var(--ink)}
-.field input,.field textarea{
+.field input,.field textarea,.field select{
   font-family:var(--f-body); font-size:1rem; color:var(--ink);
   padding:.8rem .9rem; border:1px solid var(--line); border-radius:3px; background:var(--paper);
   transition:border-color .2s ease, box-shadow .2s ease; resize:vertical;
 }
-.field input:focus,.field textarea:focus{outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(44,107,179,.15)}
+.field select{
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235b6068' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right .9rem center; background-size:16px; padding-right:2.4rem;
+}
+.field input:focus,.field textarea:focus,.field select:focus{outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(44,107,179,.15)}
 .form-note{margin:.9rem 0 0; font-size:.9rem; font-weight:600; color:var(--blue-deep); min-height:1.2em}
+.form-note.error{color:#b23c3c}
 
 /* ============================================================
    FOOTER
@@ -447,9 +447,8 @@ p{margin:0 0 1rem}
   .mobile-menu .btn{margin-top:.8rem; justify-content:center}
   /* when the menu is open at the top of the page, force dark logo/toggle so they stay visible on the light sheet */
   .site-header.menu-open{background:var(--paper)}
-  .site-header.menu-open .brand-word{color:var(--ink)}
-  .site-header.menu-open .brand-mark{filter:none}
   .site-header.menu-open .menu-toggle span{background:var(--ink)}
+  .brand-lockup{height:60px; margin:-12px 0}
   .hero{min-height:90svh}
   .hero-inner{padding-top:7rem}
   .sec-head{margin-bottom:2rem}

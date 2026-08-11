@@ -17,13 +17,13 @@
 <meta property="og:title" content="Floor's Leader · Hardwood Flooring & Remodeling in Atlanta, GA">
 <meta property="og:description" content="Hardwood flooring installation, sanding, refinishing and full bathroom & home remodeling across metro Atlanta. Licensed & insured. Unsurpassed quality.">
 <meta property="og:url" content="https://www.floorsleader.net/">
-<meta property="og:image" content="https://www.floorsleader.net/assets/flooring/flooring-01.jpg">
+<meta property="og:image" content="https://www.floorsleader.net/assets/logo/logo-new.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Floor's Leader · Hardwood Flooring & Remodeling in Atlanta, GA">
 <meta name="twitter:description" content="Hardwood flooring installation, refinishing and full remodeling across metro Atlanta. Licensed & insured.">
-<meta name="twitter:image" content="https://www.floorsleader.net/assets/flooring/flooring-01.jpg">
+<meta name="twitter:image" content="https://www.floorsleader.net/assets/logo/logo-new.png">
 
-<link rel="icon" href="assets/logo/favicon.png" type="image/png">
+<link rel="icon" href="assets/logo/favicon-new.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
@@ -37,7 +37,7 @@
   "name": "Floor's Leader",
   "description": "Hardwood flooring installation, sanding, refinishing and full bathroom & home remodeling in the Atlanta metro area.",
   "image": "https://www.floorsleader.net/assets/flooring/flooring-01.jpg",
-  "logo": "https://www.floorsleader.net/assets/logo/mark.jpg",
+  "logo": "https://www.floorsleader.net/assets/logo/logo-new.png",
   "url": "https://www.floorsleader.net/",
   "telephone": "+1-404-547-4336",
   "email": "airtonogueira@gmail.com",
@@ -71,8 +71,7 @@
 <header class="site-header" id="header">
   <div class="wrap header-inner">
     <a class="brand" href="#top" aria-label="Floor's Leader home">
-      <img src="assets/logo/mark-new.png" alt="" class="brand-mark">
-      <span class="brand-word">Floor's&nbsp;Leader</span>
+      <img src="assets/logo/logo-new.png" alt="Floor's Leader" class="brand-lockup">
     </a>
     <nav class="nav" aria-label="Primary">
       <a href="#services">Services</a>
@@ -369,6 +368,14 @@
       </ul>
     </div>
     <form class="contact-form reveal" id="quoteForm" novalidate>
+      <!-- Web3Forms: paste your access key below (create one free at https://web3forms.com).
+           Until a real key is set, the form falls back to opening the visitor's email app. -->
+      <input type="hidden" name="access_key" value="YOUR_WEB3FORMS_ACCESS_KEY">
+      <input type="hidden" name="subject" value="New quote request — Floor's Leader">
+      <input type="hidden" name="from_name" value="Floor's Leader website">
+      <input type="hidden" name="replyto" value="">
+      <input type="checkbox" name="botcheck" style="display:none" tabindex="-1" autocomplete="off">
+
       <div class="row">
         <div class="field">
           <label for="first">First name</label>
@@ -379,13 +386,32 @@
           <input id="last" name="last" type="text" autocomplete="family-name" required>
         </div>
       </div>
-      <div class="field">
-        <label for="email">Email</label>
-        <input id="email" name="email" type="email" autocomplete="email" required>
+      <div class="row">
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label for="phone">Phone</label>
+          <input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="(404) 000-0000">
+        </div>
       </div>
       <div class="field">
-        <label for="msg">How can we help?</label>
-        <textarea id="msg" name="msg" rows="4" placeholder="Tell us about your floors or remodel…"></textarea>
+        <label for="service">What do you need?</label>
+        <select id="service" name="service">
+          <option value="">Select a service…</option>
+          <option value="Hardwood Installation">Hardwood installation</option>
+          <option value="Sanding & Refinishing">Sanding &amp; refinishing</option>
+          <option value="Recoating & Repairs">Recoating &amp; repairs</option>
+          <option value="Bathroom Remodeling">Bathroom remodeling</option>
+          <option value="Backyard Kitchen">Backyard kitchen</option>
+          <option value="Deck or Porch">Deck or porch</option>
+          <option value="Not sure yet">Not sure yet</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="msg">Tell us about the project</label>
+        <textarea id="msg" name="message" rows="4" placeholder="Room size, current flooring, timeline… whatever helps."></textarea>
       </div>
       <button type="submit" class="btn btn-solid btn-block">Send request</button>
       <p class="form-note" id="formNote" role="status" aria-live="polite"></p>
