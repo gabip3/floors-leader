@@ -453,7 +453,7 @@ p{margin:0 0 1rem}
   .header-inner{position:relative}
   .brand{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); margin:0}
   .menu-toggle{margin-left:auto}
-  .brand-lockup{height:64px; width:auto; margin:0}
+  .brand-lockup{height:clamp(92px,26vw,116px); width:auto; margin:0}
   .hero .eyebrow{display:none}
   .hero{min-height:90svh}
   .hero-inner{padding-top:7rem}

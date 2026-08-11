@@ -151,23 +151,77 @@
   }
 
   /* ============================================================
-     CONTACT FORM (demo, no backend)
+     CONTACT FORM — Web3Forms
+     To activate: create a free access key at https://web3forms.com and
+     paste it into the hidden "access_key" input in the form markup.
+     Until a real key is set, the form falls back to opening the
+     visitor's email app with the details pre-filled.
      ============================================================ */
   var form = document.getElementById("quoteForm");
   var note = document.getElementById("formNote");
+
+  function setNote(text, isError) {
+    if (!note) return;
+    note.textContent = text;
+    note.classList.toggle("error", !!isError);
+  }
+
   if (form) {
     form.addEventListener("submit", function (e) {
       e.preventDefault();
+
       var first = form.first.value.trim();
       var email = form.email.value.trim();
       if (!first || !email) {
-        note.style.color = "#b23c3c";
-        note.textContent = "Please add your name and email so we can reach you.";
+        setNote("Please add your name and email so we can reach you.", true);
         return;
       }
-      note.style.color = "";
-      note.textContent = "Thanks, " + first + "! Your request was received. We'll be in touch shortly.";
-      form.reset();
+
+      var submitBtn = form.querySelector('button[type="submit"]');
+      var keyEl = form.querySelector('input[name="access_key"]');
+      var key = keyEl ? keyEl.value.trim() : "";
+      var hasRealKey = key && key.indexOf("YOUR_") === -1;
+
+      // keep the reply-to address in sync so "Reply" in the inbox goes to the customer
+      var replytoEl = form.querySelector('input[name="replyto"]');
+      if (replytoEl) replytoEl.value = email;
+
+      // No Web3Forms key yet: open the visitor's email app with the details filled in
+      if (!hasRealKey) {
+        var data = new FormData(form);
+        var lines = [];
+        data.forEach(function (v, k) {
+          if (k === "access_key" || k === "subject" || k === "from_name" || k === "replyto" || k === "botcheck" || !v) return;
+          lines.push(k + ": " + v);
+        });
+        var body = encodeURIComponent(lines.join("\n"));
+        var subject = encodeURIComponent("New quote request — Floor's Leader");
+        setNote("Thanks, " + first + "! Confirm sending in your email app and we'll reply within 24 hours.");
+        window.location.href = "mailto:airtonogueira@gmail.com?subject=" + subject + "&body=" + body;
+        return;
+      }
+
+      // Real submission via Web3Forms
+      submitBtn.disabled = true;
+      var original = submitBtn.textContent;
+      submitBtn.textContent = "Sending…";
+      fetch("https://api.web3forms.com/submit", { method: "POST", body: new FormData(form) })
+        .then(function (res) { return res.json(); })
+        .then(function (out) {
+          if (out.success) {
+            setNote("Thanks, " + first + "! Your request has been sent. We'll be in touch shortly.");
+            form.reset();
+          } else {
+            setNote("Something went wrong. Please call us at (404) 547-4336.", true);
+          }
+        })
+        .catch(function () {
+          setNote("Network error. Please call us at (404) 547-4336.", true);
+        })
+        .finally(function () {
+          submitBtn.disabled = false;
+          submitBtn.textContent = original;
+        });
     });
   }
 })();
