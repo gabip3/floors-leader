@@ -28,7 +28,8 @@
   --line-soft:rgba(22,24,27,.08);
   --shadow:0 18px 50px -24px rgba(22,24,27,.45);
 
-  --f-display:"Restore", "Arial Black", sans-serif;
+  /* brand accent font — Orbitron stands in for the logo's Ethnocentric; swap when the real file is added */
+  --f-display:"Orbitron", "Arial Narrow", sans-serif;
   --f-head:"Archivo", "Segoe UI", system-ui, sans-serif;
   --f-body:"Hanken Grotesk", "Segoe UI", system-ui, sans-serif;
 
@@ -53,8 +54,8 @@ p{margin:0 0 1rem}
 
 /* ---------- shared bits ---------- */
 .eyebrow{
-  font-family:var(--f-body); font-weight:700; text-transform:uppercase;
-  letter-spacing:.18em; font-size:.72rem; color:var(--blue);
+  font-family:var(--f-display); font-weight:500; text-transform:uppercase;
+  letter-spacing:.14em; font-size:.7rem; color:var(--blue);
   margin:0 0 1.1rem;
 }
 .eyebrow.light{color:#bfe3f3}
@@ -103,7 +104,7 @@ p{margin:0 0 1rem}
 .brand{display:flex; align-items:center; gap:.7rem; margin-right:auto}
 .brand-mark{width:38px; height:38px; object-fit:contain; mix-blend-mode:multiply}
 .brand-word{
-  font-family:var(--f-display); font-size:1.05rem; letter-spacing:.02em;
+  font-family:var(--f-display); font-weight:700; font-size:.85rem; letter-spacing:.04em;
   color:var(--ink); text-transform:uppercase;
 }
 .site-header:not(.scrolled) .hero + *{}
@@ -179,8 +180,8 @@ p{margin:0 0 1rem}
 }
 .area-list li{
   display:flex; align-items:center; gap:.7rem; justify-content:center;
-  font-family:var(--f-display); font-weight:900; text-transform:uppercase; letter-spacing:.02em;
-  font-size:clamp(1rem,1.7vw,1.35rem); color:var(--ink);
+  font-family:var(--f-display); font-weight:700; text-transform:uppercase; letter-spacing:.02em;
+  font-size:clamp(.85rem,1.4vw,1.1rem); color:var(--ink);
   background:var(--paper); border:1px solid var(--line); border-radius:4px;
   padding:1.1rem 1rem; transition:transform .3s ease, border-color .3s ease, background .3s ease;
 }
@@ -347,7 +348,7 @@ p{margin:0 0 1rem}
    ============================================================ */
 .site-footer{background:#101215; color:rgba(245,240,231,.75); padding:clamp(3rem,6vw,4.5rem) 0 2rem}
 .footer-inner{display:grid; grid-template-columns:2fr 1fr 1fr 1.4fr; gap:2rem}
-.footer-logo{width:280px; max-width:100%; margin:-30px 0 -10px -20px; mix-blend-mode:screen}
+.footer-logo{width:250px; max-width:100%; margin:-28px 0 -18px -14px}
 .footer-brand p{font-size:.95rem; max-width:34ch; margin:0}
 .footer-nav{display:flex; flex-direction:column; gap:.55rem}
 .footer-nav h4{font-family:var(--f-body); text-transform:uppercase; letter-spacing:.14em; font-size:.72rem; color:var(--cyan); margin-bottom:.5rem; font-weight:700}
