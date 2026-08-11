@@ -78,36 +78,40 @@
     document.body.style.overflow = "";
   }
 
-  document.querySelectorAll(".cat-card").forEach(function (card) {
-    card.addEventListener("click", function () {
-      var dir = card.dataset.dir;
-      var ext = card.dataset.ext || "jpg";
-      var count = +card.dataset.count;
-      var list = [];
-      for (var i = 1; i <= count; i++) list.push(dir + "-" + pad(i) + "." + ext);
-      open(list, (card.dataset.title || "").replace(/&amp;/g, "&"), 0);
+  // guard the whole block: pages without the gallery/lightbox markup (e.g. area pages)
+  // must not crash the rest of this script when #lightbox isn't on the page
+  if (lb) {
+    document.querySelectorAll(".cat-card").forEach(function (card) {
+      card.addEventListener("click", function () {
+        var dir = card.dataset.dir;
+        var ext = card.dataset.ext || "jpg";
+        var count = +card.dataset.count;
+        var list = [];
+        for (var i = 1; i <= count; i++) list.push(dir + "-" + pad(i) + "." + ext);
+        open(list, (card.dataset.title || "").replace(/&amp;/g, "&"), 0);
+      });
     });
-  });
 
-  if (lbClose) lbClose.addEventListener("click", close);
-  if (lbPrev) lbPrev.addEventListener("click", function (e) { e.stopPropagation(); step(-1); });
-  if (lbNext) lbNext.addEventListener("click", function (e) { e.stopPropagation(); step(1); });
-  lb.addEventListener("click", function (e) {
-    if (e.target === lb || e.target.classList.contains("lb-figure") || e.target.classList.contains("lb-caption")) close();
-  });
-  document.addEventListener("keydown", function (e) {
-    if (!lb.classList.contains("open")) return;
-    if (e.key === "Escape") close();
-    else if (e.key === "ArrowLeft") step(-1);
-    else if (e.key === "ArrowRight") step(1);
-  });
-  // swipe on touch
-  var sx = 0;
-  lb.addEventListener("touchstart", function (e) { sx = e.touches[0].clientX; }, { passive: true });
-  lb.addEventListener("touchend", function (e) {
-    var dx = e.changedTouches[0].clientX - sx;
-    if (Math.abs(dx) > 45) step(dx < 0 ? 1 : -1);
-  }, { passive: true });
+    if (lbClose) lbClose.addEventListener("click", close);
+    if (lbPrev) lbPrev.addEventListener("click", function (e) { e.stopPropagation(); step(-1); });
+    if (lbNext) lbNext.addEventListener("click", function (e) { e.stopPropagation(); step(1); });
+    lb.addEventListener("click", function (e) {
+      if (e.target === lb || e.target.classList.contains("lb-figure") || e.target.classList.contains("lb-caption")) close();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (!lb.classList.contains("open")) return;
+      if (e.key === "Escape") close();
+      else if (e.key === "ArrowLeft") step(-1);
+      else if (e.key === "ArrowRight") step(1);
+    });
+    // swipe on touch
+    var sx = 0;
+    lb.addEventListener("touchstart", function (e) { sx = e.touches[0].clientX; }, { passive: true });
+    lb.addEventListener("touchend", function (e) {
+      var dx = e.changedTouches[0].clientX - sx;
+      if (Math.abs(dx) > 45) step(dx < 0 ? 1 : -1);
+    }, { passive: true });
+  }
 
   /* ============================================================
      BEFORE / AFTER SLIDERS
