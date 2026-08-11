@@ -450,19 +450,17 @@ p{margin:0 0 1rem}
   .site-header.menu-open{background:var(--paper)}
   .site-header.menu-open .menu-toggle span{background:var(--ink)}
   .brand-lockup{height:60px; margin:-12px 0}
-  /* homepage only: hide the small header logo while the big brand-intro splash is on
-     screen (avoids showing two logos at once); it reappears once the user scrolls past it */
-  .has-hero-intro .brand-lockup{display:none}
-  .has-hero-intro .site-header.scrolled .brand-lockup{display:block}
   /* the header's first paint now sits over the light brand-intro block (not the dark
      hero video), so the hamburger icon must stay dark on mobile regardless of scroll state */
   .menu-toggle span{background:var(--ink)}
-  /* big centered brand splash above the hero video, replaces the small eyebrow line */
+  /* big centered brand splash above the hero video, replaces the small eyebrow line.
+     Padding is just enough to clear the fixed header (~71px) with a small gap, so the
+     logo sits right under the nav bar instead of far down the page. */
   .hero-brand-intro{
     display:flex; align-items:center; justify-content:center;
-    padding:7.5rem 1.5rem 1.75rem; background:var(--paper);
+    padding:5.5rem 1.5rem .9rem; background:var(--paper);
   }
-  .hero-brand-logo{height:clamp(110px,32vw,150px); width:auto; filter:drop-shadow(0 6px 16px rgba(15,17,20,.22))}
+  .hero-brand-logo{height:clamp(100px,30vw,140px); width:auto; filter:drop-shadow(0 6px 16px rgba(15,17,20,.22))}
   .hero .eyebrow{display:none}
   .hero{min-height:90svh}
   .hero-inner{padding-top:7rem}
