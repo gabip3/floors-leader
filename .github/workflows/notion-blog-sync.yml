@@ -1,0 +1,49 @@
+name: Sync blog from Notion (Soro)
+
+# Runs on a schedule and pulls any new/updated articles Soro published to
+# Notion, turning them into blog pages in the site's own design, then
+# commits and pushes so GitHub Pages redeploys automatically.
+#
+# Setup required before this does anything (see scripts/sync-notion-blog.js):
+#   1. Repo secret NOTION_TOKEN   — a Notion internal integration token
+#   2. Repo secret NOTION_DATABASE_ID — the Notion database Soro publishes into
+#   3. Share that Notion database with the integration (Notion UI: "Connections")
+# Until both secrets exist, this workflow runs but does nothing (safe no-op).
+
+on:
+  schedule:
+    - cron: "0 * * * *"   # every hour
+  workflow_dispatch: {}    # lets us trigger it manually from the Actions tab to test
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Sync Notion → blog pages
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+        run: node scripts/sync-notion-blog.js
+
+      - name: Commit & push if anything changed
+        run: |
+          git config user.name "floors-leader-bot"
+          git config user.email "actions@github.com"
+          git add blog/ sitemap.xml
+          if git diff --cached --quiet; then
+            echo "No new posts, nothing to commit."
+          else
+            git commit -m "Auto-publish blog post(s) from Notion"
+            git push
+          fi
