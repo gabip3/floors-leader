@@ -1,171 +1,79 @@
-// Pulls "Published" articles from the Notion database Soro writes to, turns
-// each into a blog page in the site's own design, and rebuilds the blog
-// listing (blog/index.html) from blog/posts.json — the manifest of every
-// post, manual or Notion-sourced.
+// Pulls new articles from the Soro RSS feed and turns each into a blog page
+// in the site's own design, then rebuilds the blog listing (blog/index.html)
+// from blog/posts.json — the manifest of every post, manual or Soro-sourced.
 //
-// Runs safely with nothing configured yet: if NOTION_TOKEN or
-// NOTION_DATABASE_ID aren't set, it logs a message and exits without
-// touching any files. See .github/workflows/notion-blog-sync.yml for how
-// this gets triggered.
+// Runs safely with nothing configured yet: if SORO_RSS_URL isn't set, it
+// logs a message and exits without touching any files. See
+// .github/workflows/soro-rss-sync.yml for how this gets triggered.
 //
-// ⚠️  PROPERTY NAMES BELOW ARE A REASONABLE GUESS, NOT CONFIRMED.
-// Once Soro is actually connected to a real Notion database, open that
-// database and check the exact property names it created — then update
-// the PROPS constants below to match exactly (Notion property names are
-// case-sensitive). A mismatch here just means 0 posts get picked up; it
-// won't crash anything.
+// The feed is a standard RSS 2.0 feed with the content: and media: XML
+// namespaces (same shape WordPress RSS uses): each <item> has title, link,
+// pubDate, description, content:encoded (full HTML body) and usually a
+// media:content or enclosure image. This was confirmed against the live,
+// still-empty feed on 2026-08-20 — verify against the Action log the first
+// time a real article shows up, since an empty feed can't confirm the
+// exact item shape.
 "use strict";
 const fs = require("fs");
 const path = require("path");
 
-const NOTION_TOKEN = process.env.NOTION_TOKEN;
-const DATABASE_ID = process.env.NOTION_DATABASE_ID;
-const NOTION_VERSION = "2022-06-28";
+const RSS_URL = process.env.SORO_RSS_URL;
 const SITE_URL = "https://www.floorsleader.net";
-
-// ---- adjust these to match the real Notion database schema ----
-const PROPS = {
-  title: "Title",        // Notion "title" property
-  slug: "Slug",          // rich_text property; falls back to a slugified title if missing/empty
-  excerpt: "Excerpt",     // rich_text property
-  category: "Category",   // select property
-  status: "Status",       // select property
-  statusPublishedValue: "Published",
-  cover: "Cover Image"     // files/url property; falls back to the page cover, then a default photo
-};
 const DEFAULT_IMAGE = "../assets/flooring/flooring-14.jpg";
-// ------------------------------------------------------------------
 
 const BLOG_DIR = path.join(__dirname, "..", "blog");
 const POSTS_JSON = path.join(BLOG_DIR, "posts.json");
 
-function apiHeaders() {
-  return {
-    Authorization: "Bearer " + NOTION_TOKEN,
-    "Notion-Version": NOTION_VERSION,
-    "Content-Type": "application/json"
-  };
+function stripCdata(s) {
+  if (!s) return "";
+  const m = s.match(/^\s*<!\[CDATA\[([\s\S]*)\]\]>\s*$/);
+  return m ? m[1] : s;
 }
-
-async function queryDatabase() {
-  const res = await fetch(`https://api.notion.com/v1/databases/${DATABASE_ID}/query`, {
-    method: "POST",
-    headers: apiHeaders(),
-    body: JSON.stringify({
-      filter: { property: PROPS.status, select: { equals: PROPS.statusPublishedValue } }
-    })
-  });
-  if (!res.ok) throw new Error("Notion database query failed: " + res.status + " " + (await res.text()));
-  const data = await res.json();
-  return data.results || [];
+function decodeEntities(s) {
+  return String(s)
+    .replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"').replace(/&#0?39;/g, "'")
+    .replace(/&amp;/g, "&");
 }
-
-async function fetchBlocks(blockId, blocks = [], cursor) {
-  const url = new URL(`https://api.notion.com/v1/blocks/${blockId}/children`);
-  url.searchParams.set("page_size", "100");
-  if (cursor) url.searchParams.set("start_cursor", cursor);
-  const res = await fetch(url, { headers: apiHeaders() });
-  if (!res.ok) throw new Error("Notion blocks fetch failed: " + res.status);
-  const data = await res.json();
-  blocks.push(...data.results);
-  if (data.has_more) return fetchBlocks(blockId, blocks, data.next_cursor);
-  return blocks;
-}
-
 function escapeHtml(s) {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
-
-function richTextToHtml(richText) {
-  if (!richText || !richText.length) return "";
-  return richText.map(rt => {
-    let text = escapeHtml(rt.plain_text || "");
-    const a = rt.annotations || {};
-    if (a.code) text = `<code>${text}</code>`;
-    if (a.bold) text = `<strong>${text}</strong>`;
-    if (a.italic) text = `<em>${text}</em>`;
-    if (rt.href) text = `<a href="${escapeHtml(rt.href)}">${text}</a>`;
-    return text;
-  }).join("");
+function tag(xml, name) {
+  // matches <name>text</name> or <ns:name>text</ns:name>, non-greedy, single occurrence
+  const re = new RegExp(`<(?:[\\w-]+:)?${name}[^>]*>([\\s\\S]*?)<\\/(?:[\\w-]+:)?${name}>`, "i");
+  const m = xml.match(re);
+  return m ? stripCdata(m[1]).trim() : "";
+}
+function attr(xml, tagName, attrName) {
+  const re = new RegExp(`<(?:[\\w-]+:)?${tagName}[^>]*\\s${attrName}=["']([^"']+)["'][^>]*/?>`, "i");
+  const m = xml.match(re);
+  return m ? m[1] : "";
 }
 
-// Converts a flat list of Notion blocks into HTML matching .article-body's
-// existing styles (h2, p, a — see css/style.css). Unsupported block types
-// are skipped rather than breaking the run.
-function blocksToHtml(blocks) {
-  let html = "";
-  let listBuffer = null; // { tag: 'ul'|'ol', items: [] }
-  function flushList() {
-    if (!listBuffer) return;
-    const items = listBuffer.items.map(i => `<li>${i}</li>`).join("");
-    html += `<${listBuffer.tag}>${items}</${listBuffer.tag}>`;
-    listBuffer = null;
+function parseItems(xml) {
+  const items = [];
+  const itemRe = /<item[^>]*>([\s\S]*?)<\/item>/gi;
+  let m;
+  while ((m = itemRe.exec(xml))) {
+    const block = m[1];
+    const title = decodeEntities(tag(block, "title"));
+    const link = tag(block, "link");
+    const guid = tag(block, "guid") || link;
+    const pubDate = tag(block, "pubDate");
+    const description = decodeEntities(tag(block, "description"));
+    const contentEncoded = tag(block, "content:encoded");
+    const image = attr(block, "media:content", "url") || attr(block, "enclosure", "url") || "";
+    const category = decodeEntities(tag(block, "category"));
+    items.push({ title, link, guid, pubDate, description, contentEncoded, image, category });
   }
-  for (const block of blocks) {
-    const t = block.type;
-    const data = block[t] || {};
-    if (t === "paragraph") {
-      flushList();
-      const text = richTextToHtml(data.rich_text);
-      if (text.trim()) html += `<p>${text}</p>`;
-    } else if (t === "heading_1" || t === "heading_2") {
-      flushList();
-      html += `<h2>${richTextToHtml(data.rich_text)}</h2>`;
-    } else if (t === "heading_3") {
-      flushList();
-      html += `<h2 style="font-size:1.25rem">${richTextToHtml(data.rich_text)}</h2>`;
-    } else if (t === "bulleted_list_item") {
-      if (!listBuffer || listBuffer.tag !== "ul") { flushList(); listBuffer = { tag: "ul", items: [] }; }
-      listBuffer.items.push(richTextToHtml(data.rich_text));
-    } else if (t === "numbered_list_item") {
-      if (!listBuffer || listBuffer.tag !== "ol") { flushList(); listBuffer = { tag: "ol", items: [] }; }
-      listBuffer.items.push(richTextToHtml(data.rich_text));
-    } else if (t === "quote") {
-      flushList();
-      html += `<p style="border-left:3px solid var(--cyan); padding-left:1rem; font-style:italic">${richTextToHtml(data.rich_text)}</p>`;
-    } else if (t === "image") {
-      flushList();
-      const src = data.type === "external" ? data.external.url : data.file.url;
-      html += `<figure class="article-hero" style="margin:2rem 0"><img src="${escapeHtml(src)}" alt=""></figure>`;
-    } else if (t === "divider") {
-      flushList();
-      html += `<hr style="border:0;border-top:1px solid var(--line);margin:2rem 0">`;
-    }
-    // other block types (tables, embeds, etc.) are intentionally skipped
-  }
-  flushList();
-  return html;
+  return items;
 }
 
 function slugify(str) {
   return String(str).toLowerCase().trim()
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
-
-function getProp(page, name) {
-  return page.properties && page.properties[name];
-}
-function getTitle(page) {
-  const p = getProp(page, PROPS.title);
-  return p && p.title ? p.title.map(t => t.plain_text).join("") : "Untitled";
-}
-function getRichText(page, name) {
-  const p = getProp(page, name);
-  return p && p.rich_text ? p.rich_text.map(t => t.plain_text).join("") : "";
-}
-function getSelect(page, name) {
-  const p = getProp(page, name);
-  return p && p.select ? p.select.name : "";
-}
-function getImage(page) {
-  const p = getProp(page, PROPS.cover);
-  if (p) {
-    if (p.url) return p.url;
-    if (p.files && p.files[0]) return p.files[0].external ? p.files[0].external.url : p.files[0].file.url;
-  }
-  if (page.cover) return page.cover.external ? page.cover.external.url : page.cover.file.url;
-  return DEFAULT_IMAGE;
+    .replace(/(^-|-$)/g, "")
+    .slice(0, 80);
 }
 
 function postPageHtml({ title, excerpt, category, image, slug, bodyHtml }) {
@@ -339,44 +247,58 @@ function indexPageHtml(posts) {
 `;
 }
 
+function toIsoDate(pubDate) {
+  const d = pubDate ? new Date(pubDate) : new Date(NaN);
+  return isNaN(d) ? new Date().toISOString().slice(0, 10) : d.toISOString().slice(0, 10);
+}
+
 async function main() {
-  if (!NOTION_TOKEN || !DATABASE_ID) {
-    console.log("NOTION_TOKEN / NOTION_DATABASE_ID not set yet — skipping (nothing to do).");
+  if (!RSS_URL) {
+    console.log("SORO_RSS_URL not set yet — skipping (nothing to do).");
     return;
   }
 
+  const res = await fetch(RSS_URL);
+  if (!res.ok) throw new Error("RSS fetch failed: " + res.status);
+  const xml = await res.text();
+  const items = parseItems(xml);
+  console.log(`Found ${items.length} item(s) in the RSS feed.`);
+
   const posts = JSON.parse(fs.readFileSync(POSTS_JSON, "utf8"));
   const bySlug = new Map(posts.map(p => [p.slug, p]));
+  const seenGuids = new Set(posts.map(p => p.guid).filter(Boolean));
 
-  const pages = await queryDatabase();
-  console.log(`Found ${pages.length} published page(s) in Notion.`);
+  let added = 0;
+  for (const item of items) {
+    if (!item.title || seenGuids.has(item.guid)) continue; // skip already-synced items
 
-  for (const page of pages) {
-    const title = getTitle(page);
-    let slug = getRichText(page, PROPS.slug) || slugify(title);
-    const excerpt = getRichText(page, PROPS.excerpt);
-    const category = getSelect(page, PROPS.category);
-    const image = getImage(page);
+    const slug = slugify(item.title) || slugify(item.guid);
+    const bodyHtml = item.contentEncoded || `<p>${escapeHtml(item.description)}</p>`;
+    const excerpt = item.description || item.title;
+    const image = item.image || DEFAULT_IMAGE;
 
-    const blocks = await fetchBlocks(page.id);
-    const bodyHtml = blocksToHtml(blocks);
-
-    const html = postPageHtml({ title, excerpt, category, image, slug, bodyHtml });
+    const html = postPageHtml({ title: item.title, excerpt, category: item.category, image, slug, bodyHtml });
     fs.writeFileSync(path.join(BLOG_DIR, `${slug}.html`), html, "utf8");
     console.log("Wrote blog/" + slug + ".html");
 
     bySlug.set(slug, {
-      slug, title, excerpt, category,
-      readTime: "", image: image.startsWith("http") ? image : "../" + image,
-      date: page.last_edited_time ? page.last_edited_time.slice(0, 10) : new Date().toISOString().slice(0, 10),
-      source: "notion"
+      slug, title: item.title, excerpt, category: item.category,
+      readTime: "", image, date: toIsoDate(item.pubDate),
+      guid: item.guid, source: "soro"
     });
+    seenGuids.add(item.guid);
+    added++;
+  }
+
+  if (added === 0) {
+    console.log("No new posts.");
+    return;
   }
 
   const merged = Array.from(bySlug.values());
   fs.writeFileSync(POSTS_JSON, JSON.stringify(merged, null, 2) + "\n", "utf8");
   fs.writeFileSync(path.join(BLOG_DIR, "index.html"), indexPageHtml(merged), "utf8");
-  console.log("Rebuilt blog/index.html with " + merged.length + " post(s).");
+  console.log("Rebuilt blog/index.html with " + merged.length + " post(s), " + added + " new.");
 }
 
 main().catch(err => {

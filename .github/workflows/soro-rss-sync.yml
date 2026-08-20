@@ -1,0 +1,47 @@
+name: Sync blog from Soro (RSS)
+
+# Runs on a schedule, checks the Soro RSS feed for new articles, turns each
+# into a blog page in the site's own design, then commits and pushes so
+# GitHub Pages redeploys automatically.
+#
+# Setup required before this does anything (see scripts/sync-rss-blog.js):
+#   1. Repo secret SORO_RSS_URL — the feed URL from Soro's
+#      "Connect your website" → "Other Platform" → "RSS Feed" screen
+# Until that secret exists, this workflow runs but does nothing (safe no-op).
+
+on:
+  schedule:
+    - cron: "0 * * * *"   # every hour
+  workflow_dispatch: {}    # lets us trigger it manually from the Actions tab to test
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Sync RSS → blog pages
+        env:
+          SORO_RSS_URL: ${{ secrets.SORO_RSS_URL }}
+        run: node scripts/sync-rss-blog.js
+
+      - name: Commit & push if anything changed
+        run: |
+          git config user.name "floors-leader-bot"
+          git config user.email "actions@github.com"
+          git add blog/
+          if git diff --cached --quiet; then
+            echo "No new posts, nothing to commit."
+          else
+            git commit -m "Auto-publish blog post(s) from Soro"
+            git push
+          fi
