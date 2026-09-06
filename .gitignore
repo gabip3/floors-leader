@@ -5,3 +5,24 @@ Thumbs.db
 
 # Node (not used in build, but just in case)
 node_modules/
+
+# Local development only — kept privately, not published
+server.js
+build-areas.js
+assets/video/entrada.mp4
+
+# Superseded brand assets — kept privately, not published
+/floors leader new logo.png
+assets/logo/logofl.png
+assets/logo/mark.jpg
+assets/logo/logo-color.png
+assets/logo/logo-white.png
+assets/logo/favicon.png
+
+# Never commit secrets
+.env
+.env.*
+*.bak
+*-draft.*
+*-backup.*
+
